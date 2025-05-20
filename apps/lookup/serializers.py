@@ -17,7 +17,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class MaterialSerializer(serializers.ModelSerializer):
     class Meta:
         model = Material
-        fields = ['id', 'name', 'cost']
+        fields = ['id', 'name', 'cat', 'cost']
 
 
 class FlatSerializers(serializers.ModelSerializer):
