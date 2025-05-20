@@ -1,0 +1,54 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django migrations
+**/migrations/
+!**/migrations/__init__.py
+
+# SQLite database
+*.sqlite3
+
+# Media & static
+/media/
+staticfiles/
+static/
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# macOS
+.DS_Store
+
+# Poetry virtual env (если он в проекте)
+.poetry/
+.cache/
+.python-version
+
+# Logs
+*.log
+
+# Coverage reports
+htmlcov/
+.coverage
+.tox/
+.nox/
+coverage.xml
+
+# Pytest
+.pytest_cache/
+
+# Build files
+build/
+dist/
+*.egg-info/
+
+# MyPy
+.mypy_cache/
+
+# VSCode launch config
+*.code-workspace
