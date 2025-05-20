@@ -1,8 +1,13 @@
-from django.urls import path
+from django.urls import path, include
 
-from apps.lookup.views import MaterialAPIView, CatergoryAPIView
+from apps.lookup.views import MaterialViewSet, CatergoryViewSet
+from rest_framework import routers
+
+router = routers.DefaultRouter()
+
+router.register(r'material', MaterialViewSet)
+router.register(r'category', CatergoryViewSet)
 
 urlpatterns = [
-    path('material/', MaterialAPIView.as_view()),
-    path('category/', CatergoryAPIView.as_view())
+    path('', include(router.urls)),
 ]
