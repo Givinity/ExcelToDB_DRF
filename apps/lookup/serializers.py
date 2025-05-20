@@ -17,10 +17,11 @@ class CategorySerializer(serializers.ModelSerializer):
 class MaterialSerializer(serializers.ModelSerializer):
     class Meta:
         model = Material
-        fields = ['id', 'name', 'cat', 'cost']
+        fields = ['id', 'name', 'cat', 'code', 'cost']
 
 
 class FlatSerializers(serializers.ModelSerializer):
+    """"Вывод одномерным списком в json"""
     materials = MaterialSerializer(many=True, read_only=True)
 
     class Meta:

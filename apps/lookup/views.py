@@ -48,7 +48,7 @@ class CatergoryViewSet(viewsets.ModelViewSet):
             sheet = excel_file.active
             max_rows = sheet.max_row
 
-            for row in range(2, max_rows):
+            for row in range(2, max_rows + 1):
                 code_cat = sheet[row][0].value # Код категории
                 name_cat = sheet[row][1].value # Имя категории
                 parent_cat = sheet[row][2].value # Род. категория
@@ -57,7 +57,7 @@ class CatergoryViewSet(viewsets.ModelViewSet):
                 cost = sheet[row][5].value # Стоиимость
 
                 if not name_cat or not code_cat:
-                    return Response('Неверный файл Excel, имя категории должно быть обязательно заполнено')
+                    continue
 
                 if name_cat and code_cat and not name_mat:
                     parent_cat_obj = None
