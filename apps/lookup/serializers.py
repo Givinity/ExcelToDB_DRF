@@ -26,3 +26,20 @@ class FlatSerializers(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'name', 'code', 'materials']
+
+
+class CategoryTreeSerializer(serializers.ModelSerializer):
+    """Рекурсивный сериализатор для иерархического дерева категорий"""
+    children = serializers.SerializerMethodField()
+    materials = MaterialSerializer(many=True, read_only=True)
+    total_cost = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'code', 'children', 'total_cost', 'materials', ]
+
+    def get_children(self, obj):
+        children = obj.children.all()
+        if not children:
+            return []
+        return CategoryTreeSerializer(children, many=True).data

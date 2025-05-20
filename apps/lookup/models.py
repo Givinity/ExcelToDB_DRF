@@ -10,6 +10,14 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def total_cost(self):
+        """Расчет суммы стоимости всех материалов в категории и подкатегориях"""
+        total = sum(material.cost for material in self.materials.all())
+        for child in self.children.all():
+            total += child.total_cost
+        return total
+
 
 class Material(models.Model):
     name = models.CharField(max_length=255, verbose_name="Название материала")
