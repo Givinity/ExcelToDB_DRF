@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    container_name: dj_postgres
+    environment:
+      POSTGRES_DB: ${NAME_DB}
+      POSTGRES_USER: ${USER_DB}
+      POSTGRES_PASSWORD: ${PASSWORD_DB}
+    volumes:
+      - ~/home/backup_db:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+  django_app:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    image: dj:latest
+    container_name: django_app
+    depends_on:
+      - db
+    volumes:
+      - static_vol:/app/staticfiles
+    env_file:
+      - .env
+    command: >
+      bash -c "
+        poetry run python manage.py makemigrations &&
+        poetry run python manage.py migrate &&
+        poetry run python manage.py collectstatic --noinput &&
+        poetry run gunicorn home.wsgi:application --bind 0.0.0.0:8000
+      "
+
+  nginx:
+    image: nginx:1.25
+    container_name: django_nginx
+    volumes:
+      - static_vol:/app/staticfiles
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - django_app
+    ports:
+      - "8001:80"
+
+volumes:
+  static_vol:

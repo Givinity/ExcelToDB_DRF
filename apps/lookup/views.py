@@ -59,7 +59,7 @@ class CatergoryViewSet(viewsets.ModelViewSet):
                 if not name_cat or not code_cat:
                     continue
 
-                if name_cat and code_cat and not name_mat:
+                if name_cat and code_cat:
                     parent_cat_obj = None
                     parent_cat_obj = Category.objects.filter(name=parent_cat).first()
                     category, _ = Category.objects.update_or_create(
@@ -69,7 +69,7 @@ class CatergoryViewSet(viewsets.ModelViewSet):
                             'parent_cat': parent_cat_obj
                         }
                     )
-                elif code_mat and name_mat and cost:
+                if code_mat and name_mat and cost:
                     cat_obj = Category.objects.filter(name=name_cat).first()
                     Material.objects.update_or_create(
                         code = code_mat,
