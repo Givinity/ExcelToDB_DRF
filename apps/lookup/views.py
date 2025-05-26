@@ -1,4 +1,5 @@
 import openpyxl
+from django.db import transaction
 from rest_framework import generics, viewsets, status
 from rest_framework.response import Response
 
@@ -21,7 +22,7 @@ class CatergoryViewSet(viewsets.ModelViewSet):
         categories = Category.objects.all()
         # flat = [cat.name for cat in categories]
         serializer_class = FlatSerializers(categories, many=True)
-        return Response(serializer_class)
+        return Response(serializer_class.data)
 
     @action(detail=False, methods=['get'])
     def tree(self, request):
@@ -34,13 +35,13 @@ class CatergoryViewSet(viewsets.ModelViewSet):
         serializer = CategoryTreeSerializer(root_categories, many=True)
         return Response(serializer.data)
 
-
+    @transaction.atomic
     @action(methods=['post'], detail=False)
     def import_xls(self, request):
         file = request.FILES.get('file')
 
         if not file:
-            return Response('Файл не найден или не передан')
+            return Response('Файл не найден или не передан', status.HTTP_400_BAD_REQUEST)
 
         try:
             excel_file = openpyxl.open(file, read_only=True)
