@@ -1,10 +1,10 @@
-import openpyxl
+from apps.lookup.services.import_xls import ImportService
 from django.db import transaction
 from rest_framework import generics, viewsets, status
 from rest_framework.response import Response
 
 from apps.lookup.models import Category, Material
-from apps.lookup.serializers import MaterialSerializer, CategorySerializer, FlatSerializers, CategoryTreeSerializer
+from apps.lookup.serializers import MaterialSerializer, CategorySerializer, FlatSerializers, CategoryTreeSerializer, ImportSerializer
 from rest_framework.decorators import action
 
 
@@ -13,7 +13,7 @@ class MaterialViewSet(viewsets.ModelViewSet):
     serializer_class = MaterialSerializer
 
 
-class CatergoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
@@ -35,52 +35,20 @@ class CatergoryViewSet(viewsets.ModelViewSet):
         serializer = CategoryTreeSerializer(root_categories, many=True)
         return Response(serializer.data)
 
+
+class ImportView(generics.CreateAPIView):
+    serializer_class = ImportSerializer
+
     @transaction.atomic
-    @action(methods=['post'], detail=False)
-    def import_xls(self, request):
+    def post(self, request, *args, **kwargs):
         file = request.FILES.get('file')
 
         if not file:
             return Response('Файл не найден или не передан', status.HTTP_400_BAD_REQUEST)
 
-        try:
-            excel_file = openpyxl.open(file, read_only=True)
+        import_result = ImportService.import_xls(file)
 
-            sheet = excel_file.active
-            max_rows = sheet.max_row
-
-            for row in range(2, max_rows + 1):
-                code_cat = sheet[row][0].value # Код категории
-                name_cat = sheet[row][1].value # Имя категории
-                parent_cat = sheet[row][2].value # Род. категория
-                code_mat = sheet[row][3].value # Код материала
-                name_mat = sheet[row][4].value # Имя материала
-                cost = sheet[row][5].value # Стоиимость
-
-                if not name_cat or not code_cat:
-                    continue
-
-                if name_cat and code_cat:
-                    parent_cat_obj = None
-                    parent_cat_obj = Category.objects.filter(name=parent_cat).first()
-                    category, _ = Category.objects.update_or_create(
-                        code = code_cat,
-                        defaults= {
-                            'name': name_cat,
-                            'parent_cat': parent_cat_obj
-                        }
-                    )
-                if code_mat and name_mat and cost:
-                    cat_obj = Category.objects.filter(name=name_cat).first()
-                    Material.objects.update_or_create(
-                        code = code_mat,
-                        defaults= {
-                            'name': name_mat,
-                            'cat': cat_obj,
-                            'cost': cost
-                        }
-                    )
-            return Response('Импорт завершен' ,status=status.HTTP_200_OK)
-
-        except Exception as e:
-            return Response(f'Ошибка: {e}', status=status.HTTP_400_BAD_REQUEST)
+        if import_result == 'import done':
+            return Response('Импорт завершен', status.HTTP_200_OK)
+        else:
+            return Response(import_result, status.HTTP_400_BAD_REQUEST)

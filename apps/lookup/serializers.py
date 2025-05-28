@@ -11,7 +11,7 @@ class MaterialSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ('name', 'code', 'parent_cat')
+        fields = ('id', 'name', 'code', 'parent_cat')
 
 
 class MaterialSerializer(serializers.ModelSerializer):
@@ -44,3 +44,10 @@ class CategoryTreeSerializer(serializers.ModelSerializer):
         if not children:
             return []
         return CategoryTreeSerializer(children, many=True).data
+
+
+class ImportSerializer(serializers.Serializer):
+    file = serializers.FileField()
+
+    class Meta:
+        fields = ['file']
