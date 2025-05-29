@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'apps.lookup.apps.LookupConfig',
     'rest_framework',
     'debug_toolbar',
+    'mptt',
 ]
 
 MIDDLEWARE = [

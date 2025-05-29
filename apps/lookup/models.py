@@ -1,21 +1,31 @@
+from django.core.cache import cache
 from django.db import models
+from django.db.models import Sum
+from mptt.models import MPTTModel, TreeForeignKey
 
 
-class Category(models.Model):
+class Category(MPTTModel):
     name = models.CharField(max_length=255, verbose_name="Название категории")
     code = models.IntegerField(verbose_name="Код категории", unique=True)
-    parent_cat = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="children",
+    parent_cat = TreeForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="children",
                                    verbose_name="Родительская категория")
+
+    class MPTTMeta:
+        order_insertion_by = ['name']
+        parent_attr = 'parent_cat'
 
     def __str__(self):
         return self.name
 
     @property
     def total_cost(self):
-        """Расчет суммы стоимости всех материалов в категории и подкатегориях"""
-        total = sum(material.cost for material in self.materials.all())
-        for child in self.children.all():
-            total += child.total_cost
+        cache_key = f"category_total_cost_{self.id}"
+        total = cache.get(cache_key)
+        if total is None:
+            descendants = self.get_descendants(include_self=True)
+            result = Material.objects.filter(cat__in=descendants).distinct().aggregate(Sum('cost'))
+            total = result['cost__sum'] or 0
+            cache.set(cache_key, total, timeout=3600)
         return total
 
 

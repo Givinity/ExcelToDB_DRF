@@ -47,7 +47,7 @@ def test_import_xls_view():
                                      content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
     client = APIClient()
-    response = client.post("/api/v1/category/import_xls/", {'file': django_file}, format='multipart')
+    response = client.post("/api/v1/import/", {'file': django_file}, format='multipart')
 
     assert response.status_code == 200
     assert response.data == "Импорт завершен"
